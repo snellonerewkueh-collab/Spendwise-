@@ -68,3 +68,22 @@ displayBudgetSummary(monthlyBudget, totalExpenses);
 console.log(
     "Calculated Remaining Balance: KSh " + remainingBalance
 );
+
+// 7. Update the dashboard
+
+document.getElementById("spentAmount").textContent =
+    "KSh " + totalExpenses;
+
+document.getElementById("remainingAmount").textContent =
+    "KSh " + remainingBalance;
+
+    // 8. Calculate and display budget percentage
+
+let budgetPercentage = 0;
+
+if (monthlyBudget > 0) {
+    budgetPercentage = (totalExpenses / monthlyBudget) * 100;
+}
+
+document.getElementById("budgetPercentage").textContent =
+    Math.round(budgetPercentage) + "%";
