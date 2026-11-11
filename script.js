@@ -1,89 +1,229 @@
-// ========================================
-// SpendWise - JavaScript Foundation
-// ========================================
 
-// 1. Store application data
+// ============================================
+// SPENDWISE - WEEK 6 INTERACTIVE BUDGET APP
+// ============================================
 
-let monthlyBudget = 30000;
-let totalExpenses = 16550;
-let remainingBalance = 0;
+// 1. MONTHLY BUDGET
+const monthlyBudget = 30000;
 
+// 2. EXPENSE ARRAY
+let expenses = [];
 
-// 2. Function to calculate remaining balance
+// 3. SELECT HTML ELEMENTS
+const expenseForm = document.getElementById("expenseForm");
+const expenseName = document.getElementById("expenseName");
+const expenseAmount = document.getElementById("expenseAmount");
 
-function calculateRemainingBalance(budget, expenses) {
-    return budget - expenses;
-}
+const transactionList = document.getElementById("transactionList");
 
+const monthlyExpenses = document.getElementById("monthlyExpenses");
+const spentAmount = document.getElementById("spentAmount");
+const remainingAmount = document.getElementById("remainingAmount");
 
-// 3. Function to display budget information
+const budgetPercentage = document.getElementById("budgetPercentage");
+const budgetMessage = document.getElementById("budgetMessage");
+const formMessage = document.getElementById("formMessage");
 
-function displayBudgetSummary(budget, expenses) {
-    let remaining = calculateRemainingBalance(budget, expenses);
+const clearExpensesButton = document.getElementById("clearExpenses");
 
-    console.log("========== SpendWise Budget Summary ==========");
-    console.log("Monthly Budget: KSh " + budget);
-    console.log("Total Expenses: KSh " + expenses);
-    console.log("Remaining Balance: KSh " + remaining);
-    console.log("==============================================");
-}
+// ============================================
+// 4. ADD NEW EXPENSE - EVENT LISTENER
+// ============================================
 
+expenseForm.addEventListener("submit", function(event) {
 
-// 4. Collect user input
+    // Prevent page refresh
+    event.preventDefault();
 
-let userBudget = prompt("Enter your monthly budget:");
+    const name = expenseName.value.trim();
+    const amount = Number(expenseAmount.value);
 
-if (userBudget !== null && userBudget !== "") {
-    let budgetInput = Number(userBudget);
+    // Validate user input using conditionals
+    if (name === "" || !Number.isFinite(amount) || amount <= 0) {
 
-    if (!isNaN(budgetInput) && budgetInput >= 0) {
-        monthlyBudget = budgetInput;
+        formMessage.textContent =
+            "Please enter a valid expense name and amount.";
+
+        return;
+    }
+
+    // Create expense object
+    const expense = {
+        id: Date.now() + Math.random(),
+        name: name,
+        amount: amount
+    };
+
+    // Store expense in array
+    expenses.push(expense);
+
+    // Clear input fields
+    expenseForm.reset();
+
+    // Update dashboard
+    updateDashboard();
+
+    formMessage.textContent = "Expense added successfully!";
+});
+
+// ============================================
+// 5. UPDATE DASHBOARD
+// ============================================
+
+function updateDashboard() {
+
+    let total = 0;
+
+    // Clear existing transactions
+    transactionList.innerHTML = "";
+
+    // Loop through expense array
+    for (let i = 0; i < expenses.length; i++) {
+
+        total += expenses[i].amount;
+
+        // Create transaction container
+        const transaction = document.createElement("div");
+        transaction.classList.add("transaction");
+
+        // Create icon
+        const icon = document.createElement("div");
+        icon.classList.add("transaction-icon");
+        icon.textContent = "💸";
+
+        // Create expense details
+        const details = document.createElement("div");
+        details.classList.add("transaction-details");
+
+        const name = document.createElement("strong");
+        name.textContent = expenses[i].name;
+
+        const description = document.createElement("span");
+        description.textContent = "Expense recorded";
+
+        details.appendChild(name);
+        details.appendChild(description);
+
+        // Create amount
+        const amount = document.createElement("strong");
+        amount.classList.add("expense");
+        amount.textContent =
+            "- KSh " + expenses[i].amount.toLocaleString();
+
+        // Create delete button
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.classList.add("delete-expense");
+
+        // Capture the current expense ID
+const expenseId = expenses[i].id;
+
+// Delete individual expense
+deleteButton.addEventListener("click", function() {
+
+    expenses = expenses.filter(function(item) {
+        return item.id !== expenseId;
+    });
+
+    formMessage.textContent =
+        "Expense deleted successfully.";
+
+    updateDashboard();
+});
+
+        // Assemble transaction
+        transaction.appendChild(icon);
+        transaction.appendChild(details);
+        transaction.appendChild(amount);
+        transaction.appendChild(deleteButton);
+
+        // Display transaction
+        transactionList.appendChild(transaction);
+    }
+
+    // ========================================
+    // 6. CALCULATE BUDGET
+    // ========================================
+
+    const remaining = monthlyBudget - total;
+
+    let percentage = (total / monthlyBudget) * 100;
+
+    // Prevent negative progress percentage
+    percentage = Math.max(0, Math.min(percentage, 100));
+
+    // ========================================
+    // 7. UPDATE DASHBOARD USING DOM
+    // ========================================
+
+    monthlyExpenses.textContent =
+        "KSh " + total.toLocaleString();
+
+    spentAmount.textContent =
+        "KSh " + total.toLocaleString();
+
+    remainingAmount.textContent =
+        "KSh " + remaining.toLocaleString();
+
+    budgetPercentage.textContent =
+        Math.round(percentage) + "%";
+
+    // ========================================
+    // 8. CONDITIONAL BUDGET FEEDBACK
+    // ========================================
+
+    if (total === 0) {
+
+        budgetMessage.textContent =
+            "Add expenses to begin managing your budget.";
+
+    } else if (total < monthlyBudget * 0.5) {
+
+        budgetMessage.textContent =
+            "Great! You are within a healthy budget.";
+
+    } else if (total <= monthlyBudget * 0.8) {
+
+        budgetMessage.textContent =
+            "Good progress. Monitor your spending.";
+
+    } else if (total <= monthlyBudget) {
+
+        budgetMessage.textContent =
+            "Warning! You are approaching your budget limit.";
+
+    } else {
+
+        budgetMessage.textContent =
+            "Alert! You have exceeded your monthly budget.";
     }
 }
 
+// ============================================
+// 9. CLEAR ALL EXPENSES
+// ============================================
 
-let userExpenses = prompt("Enter your total expenses:");
+clearExpensesButton.addEventListener("click", function() {
 
-if (userExpenses !== null && userExpenses !== "") {
-    let expenseInput = Number(userExpenses);
+    if (expenses.length === 0) {
 
-    if (!isNaN(expenseInput) && expenseInput >= 0) {
-        totalExpenses = expenseInput;
+        formMessage.textContent = "There are no expenses to clear.";
+
+        return;
     }
-}
 
+    // Empty the array
+    expenses = [];
 
-// 5. Perform budget calculation
+    // Update dashboard
+    updateDashboard();
 
-remainingBalance = calculateRemainingBalance(
-    monthlyBudget,
-    totalExpenses
-);
+    formMessage.textContent =
+        "All expenses have been cleared.";
+});
 
+// ============================================
+// 10. INITIAL DASHBOARD DISPLAY
+// ============================================
 
-// 6. Display results in the browser console
-
-displayBudgetSummary(monthlyBudget, totalExpenses);
-
-console.log(
-    "Calculated Remaining Balance: KSh " + remainingBalance
-);
-
-// 7. Update the dashboard
-
-document.getElementById("spentAmount").textContent =
-    "KSh " + totalExpenses;
-
-document.getElementById("remainingAmount").textContent =
-    "KSh " + remainingBalance;
-
-    // 8. Calculate and display budget percentage
-
-let budgetPercentage = 0;
-
-if (monthlyBudget > 0) {
-    budgetPercentage = (totalExpenses / monthlyBudget) * 100;
-}
-
-document.getElementById("budgetPercentage").textContent =
-    Math.round(budgetPercentage) + "%";
+updateDashboard();
